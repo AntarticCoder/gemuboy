@@ -1,23 +1,24 @@
 pub struct Bus {
     // rom: [u8; 0x3FFF],
     rom: Vec<u8>,
-    wram: [u8; 0xDFFF - 0xC000]
+    wram: [u8; 0xDFFF - 0xC000],
+    vram_tile: [u8; 0x9FFF - 0x8000],
 }
 
 impl Bus {
     pub fn new(rom: Vec<u8>) -> Self {
-        let mut bus = Bus {
+        let bus = Bus {
             rom: rom,
-            wram: [0; 0xDFFF - 0xC000]
+            wram: [0; 0xDFFF - 0xC000],
+            vram_tile: [0; 0x9FFF - 0x8000]
         };
         bus
-        // bus.rom.copy_from_slice(&rom);
-        // bus
     }
 
     pub fn read8(&self, addr: u16) -> u8 {
         match addr {
             0x0000..=0x3FFF => self.rom[addr as usize],
+            0x8000..=0x9FFF => self.vram_tile[(addr - 0x8000) as usize],
             _ => 0,
         }
     }
@@ -26,6 +27,7 @@ impl Bus {
         match addr {
             0x0000..=0x3FFF => panic!("Invalid write of data:[{}] to address:[{}] in rom", data, addr),
             0xC000..=0xDFFF => self.wram[(addr - 0xC000) as usize] = data,
+            0x8000..=0x9FFF => self.vram_tile[(addr - 0x8000) as usize] = data,
             _ => panic!("Failed write. \nData: [{}]\nAddress:[{}]", data, addr)
         }
     }

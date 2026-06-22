@@ -12,8 +12,9 @@ pub struct CPU {
     sp: u16,
     pc: u16,
 
+    halt: bool,
     ime: bool,
-
+    
     is_16bit_opcode: bool
 }
 
@@ -48,6 +49,7 @@ impl CPU {
             sp: 0,
             // pc: 0x0100,
             pc: 0,
+            halt: false,
             ime: true,
             is_16bit_opcode: false
         }
@@ -68,19 +70,18 @@ impl CPU {
     pub fn unimplemented_instruction(&mut self, bus: &mut Bus) {
         self.pc -= 1;
         println!("Unimplemented instruction {}", bus.read8(self.pc));
-        panic!()
+        self.halt = true;
     }
 
-    pub fn nop(&mut self, bus: &mut Bus) {
+    pub fn nop(&mut self, _bus: &mut Bus) {
         // Do nothing
         println!("NOP");
     }
 
-    pub fn di(&mut self, bus: &mut Bus) {
+    pub fn di(&mut self, _bus: &mut Bus) {
         self.ime = false;
         println!("DI")
     }
-
 
     pub fn jp_a16(&mut self, bus: &mut Bus) {
         self.pc = self.fetch16(bus);
@@ -127,6 +128,10 @@ impl CPU {
 
 
     pub fn decode_and_execute(&mut self, bus: &mut Bus) {
+        if self.halt {
+            return;
+        }
+
         let opcode = bus.read8(self.pc);
         self.pc += 1;
         OPCODE_LUT[opcode as usize](self, bus);
