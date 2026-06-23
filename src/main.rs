@@ -1,5 +1,6 @@
 mod bus;
 mod cpu;
+mod logger;
 mod window;
 
 use bus::Bus;
@@ -18,6 +19,8 @@ fn main() {
 
     let mut bus = Bus::new(rom);
     let mut cpu = CPU::new();
+
+    gemuerror!("Hello");
 
     loop {
         window.canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 0, 0));
