@@ -3,9 +3,12 @@ mod cpu;
 mod logger;
 mod window;
 
+use std::env;
 use bus::Bus;
 use cpu::CPU;
 use window::SDLWindow;
+
+use crate::logger::{disable_trace_logging, write_logs};
 
 fn main() {
     let mut window = SDLWindow::new();
@@ -22,6 +25,8 @@ fn main() {
 
     gemuerror!("Hello");
 
+    // disable_trace_logging();
+
     loop {
         window.canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 0, 0));
         window.canvas.clear();
@@ -29,6 +34,7 @@ fn main() {
         for event in window.event_pump.poll_iter() {
             match event {
                 sdl2::event::Event::Quit { .. } => {
+                    write_logs();
                     return;
                 }
                 _ => {}

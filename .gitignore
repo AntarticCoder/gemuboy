@@ -1,2 +1,4 @@
 /roms
 /target
+
+*.log

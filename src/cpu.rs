@@ -1,7 +1,7 @@
 use crate::bus::Bus;
 use crate::logger::{LogColor, LogType};
 
-use crate::{gemuerror, gemuinfo, gemulog, gemuwarning};
+use crate::{gemuerror, gemuinfo, gemulog, gemuwarning, gemutrace};
 
 struct FlagRegister {
     pub zero: bool,
@@ -108,40 +108,40 @@ impl CPU {
 
     pub fn nop(&mut self, _bus: &mut Bus) {
         // Do nothing
-        gemuinfo!("NOP");
+        gemutrace!("NOP");
     }
 
     pub fn di(&mut self, _bus: &mut Bus) {
         self.ime = false;
-        gemuinfo!("DI")
+        gemutrace!("DI")
     }
 
     pub fn jp_a16(&mut self, bus: &mut Bus) {
         self.pc = self.fetch16(bus);
-        gemuinfo!("JP A16")
+        gemutrace!("JP A16")
     }
 
     pub fn ld_sp_d16(&mut self, bus: &mut Bus) {
         self.sp = self.fetch16(bus);
-        gemuinfo!("LD SP, D16")
+        gemutrace!("LD SP, D16")
     }
 
     pub fn ld_a16_a(&mut self, bus: &mut Bus) {
         let addr = self.fetch16(bus);
         bus.write8(addr, self.a);
-        gemuinfo!("LD A16, A")
+        gemutrace!("LD A16, A")
     }
 
     pub fn ld_a_d8(&mut self, bus: &mut Bus) {
         let data = self.fetch8(bus);
         self.a = data;
-        gemuinfo!("LD A, D8")
+        gemutrace!("LD A, D8")
     }
 
     pub fn ld_hl_d16(&mut self, bus: &mut Bus) {
         self.l = self.fetch8(bus);
         self.h = self.fetch8(bus);
-        gemuinfo!("LD HL, D16")
+        gemutrace!("LD HL, D16")
     }
 
     pub fn ld_hl_plus_a(&mut self, bus: &mut Bus) {
@@ -156,7 +156,7 @@ impl CPU {
         let [lo, hi] = u16::to_le_bytes(addr.wrapping_add(1));
         self.l = lo;
         self.h = hi;
-        gemuinfo!("LD (HL+), A")
+        gemutrace!("LD (HL+), A")
     }
 
     pub fn bit_5_h(&mut self, _bus: &mut Bus) {
@@ -164,7 +164,7 @@ impl CPU {
         // self.f.zero = bit;
         self.f.zero = !bit;
 
-        gemuinfo!("BIT 5, H")
+        gemutrace!("BIT 5, H")
     }
 
     pub fn jr_z_s8(&mut self, bus: &mut Bus) {
@@ -172,13 +172,13 @@ impl CPU {
         if self.f.zero {
             self.pc = ((self.pc as i16) + (offset as i16)) as u16;
         }
-        gemuinfo!("JR Z, S8")
+        gemutrace!("JR Z, S8")
     }
 
     pub fn ld_a8_a(&mut self, bus: &mut Bus) {
         let addr = 0xFF00 + self.fetch8(bus) as u16;
         bus.write8(addr, self.a);
-        gemuinfo!("LD (A8), A")
+        gemutrace!("LD (A8), A")
     }
 
     pub fn ld_de_d16(&mut self, bus: &mut Bus) {
@@ -186,30 +186,30 @@ impl CPU {
 
         self.e = data.to_le_bytes()[0];
         self.d = data.to_le_bytes()[1];
-        gemuinfo!("LD DE, D16")
+        gemutrace!("LD DE, D16")
     }
 
     pub fn ld_a_de(&mut self, bus: &mut Bus) {
         let addr = u16::from_le_bytes([self.e, self.d]);
         self.a = bus.read8(addr);
 
-        gemuinfo!("LD A, DE")
+        gemutrace!("LD A, DE")
     }
 
     pub fn ld_hl_c(&mut self, bus: &mut Bus) {
         let addr = u16::from_le_bytes([self.l, self.h]);
         bus.write8(addr, self.c);
 
-        gemuinfo!("LD HL, C")
+        gemutrace!("LD HL, C")
     }
 
     pub fn ld_b_a(&mut self, _bus: &mut Bus) {
         self.b = self.a;
-        gemuinfo!("LD B, A")
+        gemutrace!("LD B, A")
     }
 
     pub fn call_a16(&mut self, bus: &mut Bus) {
-        gemuinfo!("SP: {}", self.sp);
+        gemutrace!("SP: {}", self.sp);
 
         let func_addr = self.fetch16(bus);
 
@@ -221,12 +221,12 @@ impl CPU {
 
         self.pc = func_addr;
 
-        gemuinfo!("CALL A16")
+        gemutrace!("CALL A16")
     }
 
     pub fn ld_c_d8(&mut self, bus: &mut Bus) {
         self.c = self.fetch8(bus);
-        gemuinfo!("LD C, D8")
+        gemutrace!("LD C, D8")
     }
 
     pub fn jr_nz_s8(&mut self, bus: &mut Bus) {
@@ -235,7 +235,7 @@ impl CPU {
             self.pc = ((self.pc as i16) + (offset as i16)) as u16;
         }
 
-        gemuinfo!("JR NZ, S8")
+        gemutrace!("JR NZ, S8")
     }
 
     pub fn sla_b(&mut self, _bus: &mut Bus) {
@@ -245,7 +245,7 @@ impl CPU {
 
         self.b = self.b << 1;
 
-        gemuinfo!("SLA B")
+        gemutrace!("SLA B")
     }
 
     pub fn decode_and_execute(&mut self, bus: &mut Bus) {
@@ -257,7 +257,7 @@ impl CPU {
         self.pc += 1;
 
         if opcode == 0xCB {
-            gemuinfo!("CB PREFIX");
+            gemutrace!("CB PREFIX");
             let cb_opcode = self.fetch8(bus);
             OPCODE_CB_LUT[cb_opcode as usize](self, bus);
             return;
