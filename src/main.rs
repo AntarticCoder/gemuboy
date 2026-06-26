@@ -3,7 +3,6 @@ mod cpu;
 mod logger;
 mod window;
 
-use std::env;
 use bus::Bus;
 use cpu::CPU;
 use window::SDLWindow;
@@ -25,7 +24,7 @@ fn main() {
 
     gemuerror!("Hello");
 
-    // disable_trace_logging();
+    disable_trace_logging();
 
     loop {
         window.canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 0, 0));
